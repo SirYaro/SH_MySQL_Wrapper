@@ -6,6 +6,9 @@
 # By: Radovan Janjic
 #
 ###################################################################################
+# CONFIG
+###################################################################################
+
 # connect data
 con_user="root";
 con_pass="test";
@@ -25,13 +28,14 @@ log_file='mysql_log.txt';
 
 # CSV format
 delimiter=',';
-enclosure="\"";
-escape='\';
+enclosure='"';
+escape='\\';
 newline='\n';
 # Column names as first row
 column_names=1;
 
 ###################################################################################
+# FUNCTION
 ###################################################################################
 
 #
@@ -115,7 +119,7 @@ array2insert() {
 }
 
 #
-# example insertquery
+# example array2insert
 #
 #declare -A data
 #data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
@@ -157,7 +161,7 @@ array2update() {
 }
 
 #
-# example updatequery
+# example array2update
 #
 #declare -A data
 #data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
@@ -172,8 +176,6 @@ array2update() {
 # $1 - query
 # $2 - file
 query2csv() {
-
-	
 	# real path
 	local file=$(readlink -f $2);
 	
@@ -185,7 +187,7 @@ query2csv() {
 	# remove ; from end of query and replace limit with limit 1 (used for column names query)
 	local sqlc=$(echo "$1" | sed -e 's/;$//;s/limit\s*[0-9]*\s*$//Ig;s/limit\s*[0-9]*\s*,\s*[0-9]*\s*$//Ig;');
 	# output to file sql
-	local sql_out=" INTO OUTFILE '"$(escape $file)"' FIELDS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$(escape "$escape")"' LINES TERMINATED BY '"$newline"';";
+	local sql_out=" INTO OUTFILE '"$(escape $file)"' FIELDS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$escape"' LINES TERMINATED BY '"$newline"';";
 	
 	if [ $column_names -gt 0 ]; then
 		local i=0;
@@ -216,12 +218,12 @@ query2csv() {
 #
 # $1 - table name
 # $2 - file
-exporttable2csv(){
+table2csv(){
 	mysqlquery2csv "SELECT * FROM $1" $2;
 }
 
 #
-# example exporttable2csv
+# example table2csv
 #
-#exporttable2csv 'test' 'test.csv'
+#table2csv 'test' 'test.csv'
 ###################################################################################
