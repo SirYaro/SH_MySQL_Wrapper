@@ -16,6 +16,9 @@ con_db="test";
 # last insert id
 last_insert_id=0;
 
+# affected rows
+affected_rows=0;
+
 # log config
 log_queries=1;
 log_file='mysql_log.txt';
@@ -29,9 +32,26 @@ escape() {
 	printf -v var "%q" "$1";
 	echo "$var";
 }
-
+#
+# example escape string
+#
 #echo $(escape "'")
+###################################################################################
 
+#
+# join array elements
+#
+# $1 - delimiter
+# $2 - array
+join() { 
+	local IFS="$1"; shift; echo "$*"; 
+}
+
+#
+# example join array
+#
+#join ',' "${array[@]}"
+###################################################################################
 
 #
 # do mysql query
@@ -44,8 +64,11 @@ query() {
 	mysql -u$con_user -p$con_pass -h$con_host -P$con_port $con_db -e"$1";
 }
 
+#
+# example query
+#
 #query 'describe test;'
-
+###################################################################################
 
 #
 # export query to csv using mysql query
@@ -94,9 +117,11 @@ query2csv() {
 		query "$sql $sql_out";
 	fi
 }
-
+#
+# example of query2csv
+#
 #mysqlquery2csv 'select * from test' 'test.csv'
-
+###################################################################################
 
 #
 # export table to csv file
@@ -107,8 +132,11 @@ exporttable2csv(){
 	mysqlquery2csv "SELECT * FROM $1" $2;
 }
 
+#
+# example exporttable2csv
+#
 #exporttable2csv 'test' 'test.csv'
-
+###################################################################################
 
 #
 # insert values into table
@@ -116,15 +144,82 @@ exporttable2csv(){
 # $1 - table name
 # $2 - values
 insertquery() {
-	i=0;
-	query "INSERT INTO \`$1\` VALUES ( $2 ); SELECT LAST_INSERT_ID();" | while read -r line; do
+	local i=0;
+	eval "declare -A data="${2#*=};
+	
+	# prepare columns
+	local columns=();
+	for k in "${!data[@]}"; do
+		columns+=("\`$k\`");
+	done
+	
+	# prepare values
+	local values=();
+	for v in "${data[@]}"; do
+		if [[ $v == "::"* ]]; then
+			values+=(${v#"::"});
+		else
+			values+=("'$(escape "$v")'");
+		fi
+	done
+	
+	# do query
+	query "INSERT INTO \`$1\` ( $(join ',' "${columns[@]}") ) VALUES ( $(join ',' "${values[@]}") ); SELECT LAST_INSERT_ID();" | while read -r line; do
 		if [ $i -gt 0 ]; then
 			last_insert_id=$(echo "$line" | cut -f1);
 		fi
-		i=`expr $i + 1`
+		i=`expr $i + 1`;
 	done
 }
 
-#insertquery 'test' 'NULL, 1, 2, 3, NOW()'
+#
+# example insertquery
+#
+#declare -A data
+#data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
+#insertquery 'test' "$(declare -p data)"
 #echo $last_insert_id
+###################################################################################
 
+#
+# update values
+#
+# $1 - table name
+# $2 - values
+# $3 - sql condition
+updatequery() {
+	local i=0;
+	local where='';
+	
+	eval "declare -A data="${2#*=};
+	
+	# prepare columns and values
+	local columns=();
+	for k in "${!data[@]}"; do
+		if [[ ${data[$k]} == "::"* ]]; then
+			columns+=("\`$k\` = "${data[$k]#"::"});
+		else
+			columns+=("\`$k\` = '$(escape "${data[$k]}")'");
+		fi
+	done
+	
+	[ -z "$3" ] || where=' WHERE '$3;
+	
+	# do query
+	query "UPDATE \`$1\` SET $(join ',' "${columns[@]}")"$where"; SELECT ROW_COUNT();" | while read -r line; do
+		if [ $i -gt 0 ]; then
+			affected_rows=$(echo "$line" | cut -f1);
+		fi
+		i=`expr $i + 1`;
+	done
+}
+
+#
+# example updatequery
+#
+#declare -A data
+#data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
+#id=1;
+#updatequery 'test' "$(declare -p data)" "id = $id"
+#echo $affected_rows
+###################################################################################
