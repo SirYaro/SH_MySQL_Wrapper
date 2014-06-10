@@ -71,74 +71,6 @@ query() {
 ###################################################################################
 
 #
-# export query to csv using mysql query
-#
-# $1 - query
-# $2 - file
-query2csv() {
-	# CSV format
-	local delimiter=',';
-	local enclosure='"';
-	local escape='\';
-	local newline='\n';
-	
-	# Column names as first row
-	local column_names=1;
-	
-	# real path
-	local file=$(readlink -f $2);
-	
-	# remove CSV file if exists
-	[ -f "$file" ] && rm $file;
-	
-	# remove ; from end of query
-	local sql=$(echo "$1" | sed "s/;$//");
-	
-	# TODO: replace limit with limit 1 for colectiong column names
-	# /limit[\s]+([\d]+[\s]*,[\s]*[\d]+[\s]*|[\d]+[\s]*)$/i
-	
-	local sql_out=" INTO OUTFILE '"$(escape $file)"' FIELDS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$(escape "$escape")"' LINES TERMINATED BY '"$newline"';";
-	
-	if [ $column_names -gt 0 ]; then
-		local i=0;
-		columns_sql="SELECT ";
-		query "$sql LIMIT 1;" | while read -r line
-		do
-			if [ $i -lt 1 ]; then
-				local arr=(${line// / });
-				for i in ${arr[@]}; do
-					columns_sql=$columns_sql"'"$i"' AS \`"$i"\`, ";
-				done
-				i=1;
-				query "SELECT * FROM ( ( $(echo "$columns_sql" | sed "s/, $//") ) UNION ALL ( $sql ) ) \`a\` $sql_out";
-			fi
-		done
-	else
-		query "$sql $sql_out";
-	fi
-}
-#
-# example of query2csv
-#
-#mysqlquery2csv 'select * from test' 'test.csv'
-###################################################################################
-
-#
-# export table to csv file
-#
-# $1 - table name
-# $2 - file
-exporttable2csv(){
-	mysqlquery2csv "SELECT * FROM $1" $2;
-}
-
-#
-# example exporttable2csv
-#
-#exporttable2csv 'test' 'test.csv'
-###################################################################################
-
-#
 # insert values into table
 #
 # $1 - table name
@@ -222,4 +154,72 @@ updatequery() {
 #id=1;
 #updatequery 'test' "$(declare -p data)" "id = $id"
 #echo $affected_rows
+###################################################################################
+
+#
+# export query to csv using mysql query
+#
+# $1 - query
+# $2 - file
+query2csv() {
+	# CSV format
+	local delimiter=',';
+	local enclosure='"';
+	local escape='\';
+	local newline='\n';
+	
+	# Column names as first row
+	local column_names=1;
+	
+	# real path
+	local file=$(readlink -f $2);
+	
+	# remove CSV file if exists
+	[ -f "$file" ] && rm $file;
+	
+	# remove ; from end of query
+	local sql=$(echo "$1" | sed "s/;$//");
+	
+	# TODO: replace limit with limit 1 for colectiong column names
+	# /limit[\s]+([\d]+[\s]*,[\s]*[\d]+[\s]*|[\d]+[\s]*)$/i
+	
+	local sql_out=" INTO OUTFILE '"$(escape $file)"' FIELDS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$(escape "$escape")"' LINES TERMINATED BY '"$newline"';";
+	
+	if [ $column_names -gt 0 ]; then
+		local i=0;
+		columns_sql="SELECT ";
+		query "$sql LIMIT 1;" | while read -r line
+		do
+			if [ $i -lt 1 ]; then
+				local arr=(${line// / });
+				for i in ${arr[@]}; do
+					columns_sql=$columns_sql"'"$i"' AS \`"$i"\`, ";
+				done
+				i=1;
+				query "SELECT * FROM ( ( $(echo "$columns_sql" | sed "s/, $//") ) UNION ALL ( $sql ) ) \`a\` $sql_out";
+			fi
+		done
+	else
+		query "$sql $sql_out";
+	fi
+}
+#
+# example of query2csv
+#
+#mysqlquery2csv 'select * from test' 'test.csv'
+###################################################################################
+
+#
+# export table to csv file
+#
+# $1 - table name
+# $2 - file
+exporttable2csv(){
+	mysqlquery2csv "SELECT * FROM $1" $2;
+}
+
+#
+# example exporttable2csv
+#
+#exporttable2csv 'test' 'test.csv'
 ###################################################################################
