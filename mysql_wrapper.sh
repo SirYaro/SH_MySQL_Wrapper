@@ -1,11 +1,11 @@
 #!/bin/bash
-
+###################################################################################
 #
 # SH MySQL Wrapper
 #
 # By: Radovan Janjic
 #
-
+###################################################################################
 # connect data
 con_user="root";
 con_pass="test";
@@ -23,6 +23,16 @@ affected_rows=0;
 log_queries=1;
 log_file='mysql_log.txt';
 
+# CSV format
+delimiter=',';
+enclosure="\"";
+escape='\';
+newline='\n';
+# Column names as first row
+column_names=1;
+
+###################################################################################
+###################################################################################
 
 #
 # mysql escape string
@@ -75,16 +85,16 @@ query() {
 #
 # $1 - table name
 # $2 - values
-insertquery() {
+array2insert() {
 	local i=0;
 	eval "declare -A data="${2#*=};
-	
+
 	# prepare columns
 	local columns=();
 	for k in "${!data[@]}"; do
 		columns+=("\`$k\`");
 	done
-	
+
 	# prepare values
 	local values=();
 	for v in "${data[@]}"; do
@@ -94,7 +104,7 @@ insertquery() {
 			values+=("'$(escape "$v")'");
 		fi
 	done
-	
+
 	# do query
 	query "INSERT INTO \`$1\` ( $(join ',' "${columns[@]}") ) VALUES ( $(join ',' "${values[@]}") ); SELECT LAST_INSERT_ID();" | while read -r line; do
 		if [ $i -gt 0 ]; then
@@ -109,7 +119,7 @@ insertquery() {
 #
 #declare -A data
 #data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
-#insertquery 'test' "$(declare -p data)"
+#array2insert 'test' "$(declare -p data)"
 #echo $last_insert_id
 ###################################################################################
 
@@ -119,12 +129,12 @@ insertquery() {
 # $1 - table name
 # $2 - values
 # $3 - sql condition
-updatequery() {
+array2update() {
 	local i=0;
 	local where='';
-	
+
 	eval "declare -A data="${2#*=};
-	
+
 	# prepare columns and values
 	local columns=();
 	for k in "${!data[@]}"; do
@@ -134,9 +144,9 @@ updatequery() {
 			columns+=("\`$k\` = '$(escape "${data[$k]}")'");
 		fi
 	done
-	
+
 	[ -z "$3" ] || where=' WHERE '$3;
-	
+
 	# do query
 	query "UPDATE \`$1\` SET $(join ',' "${columns[@]}")"$where"; SELECT ROW_COUNT();" | while read -r line; do
 		if [ $i -gt 0 ]; then
@@ -152,7 +162,7 @@ updatequery() {
 #declare -A data
 #data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
 #id=1;
-#updatequery 'test' "$(declare -p data)" "id = $id"
+#array2update 'test' "$(declare -p data)" "id = $id"
 #echo $affected_rows
 ###################################################################################
 
@@ -162,14 +172,7 @@ updatequery() {
 # $1 - query
 # $2 - file
 query2csv() {
-	# CSV format
-	local delimiter=',';
-	local enclosure='"';
-	local escape='\';
-	local newline='\n';
-	
-	# Column names as first row
-	local column_names=1;
+
 	
 	# real path
 	local file=$(readlink -f $2);
@@ -177,18 +180,17 @@ query2csv() {
 	# remove CSV file if exists
 	[ -f "$file" ] && rm $file;
 	
-	# remove ; from end of query
+	# remove ; from end of query 
 	local sql=$(echo "$1" | sed "s/;$//");
-	
-	# TODO: replace limit with limit 1 for colectiong column names
-	# /limit[\s]+([\d]+[\s]*,[\s]*[\d]+[\s]*|[\d]+[\s]*)$/i
-	
+	# remove ; from end of query and replace limit with limit 1 (used for column names query)
+	local sqlc=$(echo "$1" | sed -e 's/;$//;s/limit\s*[0-9]*\s*$//Ig;s/limit\s*[0-9]*\s*,\s*[0-9]*\s*$//Ig;');
+	# output to file sql
 	local sql_out=" INTO OUTFILE '"$(escape $file)"' FIELDS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$(escape "$escape")"' LINES TERMINATED BY '"$newline"';";
 	
 	if [ $column_names -gt 0 ]; then
 		local i=0;
 		columns_sql="SELECT ";
-		query "$sql LIMIT 1;" | while read -r line
+		query "$sqlc LIMIT 1;" | while read -r line
 		do
 			if [ $i -lt 1 ]; then
 				local arr=(${line// / });
@@ -206,7 +208,7 @@ query2csv() {
 #
 # example of query2csv
 #
-#mysqlquery2csv 'select * from test' 'test.csv'
+#query2csv 'select * from static_languages Limit 20,10' 'test.csv'
 ###################################################################################
 
 #
