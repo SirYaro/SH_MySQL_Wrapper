@@ -119,6 +119,15 @@ fetch1st() {
 		i=`expr $i + 1`;
 	done <<< "$(query "$(echo "$1" | sed -e 's/;$//;s/limit\s*[0-9]*\s*$//Ig;s/limit\s*[0-9]*\s*,\s*[0-9]*\s*$//Ig;') LIMIT 1;")"
 }
+#
+# example fetch1st
+#
+#fetch1st "select * from test";
+#echo $num_rows "rows"
+#echo $num_columns "cols"
+#echo ${matrix[column_one]} 
+#echo ${matrix[column_two]} 
+###################################################################################
 
 #
 # query fetch result into array
