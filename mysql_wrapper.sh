@@ -196,7 +196,7 @@ array2insert() {
 			last_insert_id=$(echo "$line" | cut -f1);
 		fi
 		i=`expr $i + 1`;
-	done <<< "$(query "INSERT INTO \`$1\` ( $(join ',' "${columns[@]}") ) VALUES ( $(join ',' "${values[@]}") ); SELECT LAST_INSERT_ID();")" 
+	done <<< "$(query "INSERT INTO \`$1\` ( $(join ',' "${columns[@]}") ) VALUES ( $(join ',' "${values[@]}") ); SELECT LAST_INSERT_ID();")"
 }
 
 #
@@ -238,7 +238,7 @@ array2update() {
 			affected_rows=$(echo "$line" | cut -f1);
 		fi
 		i=`expr $i + 1`;
-	done <<< "$(query "UPDATE \`$1\` SET $(join ',' "${columns[@]}")"$where"; SELECT ROW_COUNT();")" 
+	done <<< "$(query "UPDATE \`$1\` SET $(join ',' "${columns[@]}")$where; SELECT ROW_COUNT();")" 
 }
 
 #
