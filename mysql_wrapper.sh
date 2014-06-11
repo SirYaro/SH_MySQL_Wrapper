@@ -291,7 +291,7 @@ query2csv() {
 #
 # example of query2csv
 #
-#query2csv 'select * from static_languages Limit 20,10' 'test.csv'
+#query2csv 'select * from test Limit 20,10' 'test.csv'
 ###################################################################################
 
 #
