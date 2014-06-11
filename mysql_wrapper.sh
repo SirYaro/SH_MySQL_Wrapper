@@ -104,13 +104,8 @@ fetch1st() {
 	num_columns=0;
 	while read -r line; do
 		if [ $i -gt 0 ]; then
-			#echo "$line" | cut -f1; # column 1
-			#echo "$line" | cut -f2; # column 2
-			#echo "$line" | cut -f3; # column 3
-			# column ...
 			local j=1;
 			for k in ${arr[@]}; do
-				#num_columns=`expr $num_columns + 1`;
 				eval matrix[$k]='$(echo "$line" | cut -f$j)';
 				j=`expr $j + 1`;
 			done
@@ -119,9 +114,6 @@ fetch1st() {
 			local arr=(${line// / });
 			for k in ${arr[@]}; do
 				num_columns=`expr $num_columns + 1`;
-				echo $k
-				
-				#echo $num_columns
 			done
 		fi
 		i=`expr $i + 1`;
