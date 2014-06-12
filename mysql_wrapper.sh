@@ -56,7 +56,7 @@ escape() {
 	echo "$var";
 }
 #
-# example escape string
+## example escape string
 #
 #echo $(escape "'")
 ###################################################################################
@@ -71,7 +71,7 @@ join() {
 }
 
 #
-# example join array
+## example join array
 #
 #join ',' "${array[@]}"
 ###################################################################################
@@ -82,13 +82,13 @@ join() {
 # $1 -query
 query() {
 	if [ $log_queries -gt 0 ]; then
-		echo "$1" >> $log_file;
+		echo `date +"%c"`" -> $1" >> $log_file;
 	fi
 	mysql -u$con_user -p$con_pass -h$con_host -P$con_port $con_db -e"$1";
 }
 
 #
-# example query
+## example query
 #
 #query 'describe test;'
 ###################################################################################
@@ -120,13 +120,15 @@ fetch1st() {
 	done <<< "$(query "$(echo "$1" | sed -e 's/;$//;s/limit\s*[0-9]*\s*$//Ig;s/limit\s*[0-9]*\s*,\s*[0-9]*\s*$//Ig;') LIMIT 1;")"
 }
 #
-# example fetch1st
+## example fetch1st
 #
 #fetch1st "select * from test";
-#echo $num_rows "rows"
-#echo $num_columns "cols"
-#echo ${matrix[column_one]} 
-#echo ${matrix[column_two]} 
+#
+#echo ${matrix[id]} 
+#echo ${matrix[firstname]} 
+#echo ${matrix[surname]} 
+#
+#echo "There is "$num_rows" row and "$num_columns" columns."
 ###################################################################################
 
 #
@@ -154,13 +156,17 @@ fetch2array() {
 }
 
 #
-# example array2insert
+## example fetch2array
 #
 #fetch2array "select * from test limit 5";
+#
+#echo $num_rows "rows"
+#echo $num_columns "cols"
+#
 #for (( j=1; j <= num_columns; j++ )); do
 #    for (( i=1; i <= num_rows; i++ )); do
-#		 # $i - row
-#		 # $j - col
+#		# $i - row
+#		# $j - col
 #        echo ${matrix[$i,$j]}
 #    done
 #done
@@ -201,10 +207,10 @@ array2insert() {
 }
 
 #
-# example array2insert
+## example array2insert
 #
 #declare -A data
-#data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
+#data=([id]='::null' [firstname]=Radovan [surname]=Janjic)
 #array2insert 'test' "$(declare -p data)"
 #echo $last_insert_id
 ###################################################################################
@@ -243,12 +249,12 @@ array2update() {
 }
 
 #
-# example array2update
+## example array2update
 #
 #declare -A data
-#data=([id]='::null()' [firstname]=Radovan [surname]=Janjic)
-#id=1;
-#array2update 'test' "$(declare -p data)" "id = $id"
+#data=([firstname]=Rade [surname]=Janjic)
+#id=3;
+#array2update 'test' "$(declare -p data)" "id < $id"
 #echo $affected_rows
 ###################################################################################
 
@@ -290,9 +296,10 @@ query2csv() {
 	fi
 }
 #
-# example of query2csv
+## example of query2csv
 #
-#query2csv 'select * from test Limit 20,10' 'test.csv'
+#query2csv 'select * from test' 'test-1.csv';
+#query2csv 'select firstname,surname from test limit 2,4' 'test-2.csv';
 ###################################################################################
 
 #
@@ -301,11 +308,11 @@ query2csv() {
 # $1 - table name
 # $2 - file
 table2csv(){
-	mysqlquery2csv "SELECT * FROM $1" $2;
+	query2csv "SELECT * FROM $1" $2;
 }
 
 #
-# example table2csv
+## example table2csv
 #
 #table2csv 'test' 'test.csv'
 ###################################################################################
@@ -335,7 +342,7 @@ backup() {
 }
 
 #
-# example backup
+## example backup
 #
 #backup                        # backup all databases
 #backup 'testdb'               # backup testdb
