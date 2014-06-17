@@ -33,6 +33,8 @@ escape='\\';
 newline='\n';
 # Column names as first row
 column_names=1;
+# Number of ignored rows
+ignore_rows=1;
 
 # backup
 backup_path='backups';
@@ -74,6 +76,43 @@ join() {
 ## example join array
 #
 #join ',' "${array[@]}"
+###################################################################################
+
+#
+# split string
+#
+# $1 - delimiter
+# $2 - string
+split() {
+	echo $2 | tr "$1" "\n"
+}
+
+#
+## example split string
+#
+#for x in $(split ";" "foo;bar;baz;qux"); do
+#    echo "> [$x]";
+#done
+###################################################################################
+
+#
+# trim string
+#
+# $1 - string
+# $2 - char to trim (default: white space)
+trim() {
+	if [ -z "$2" ]; then
+		local char=' ';
+	else
+		local char=$2;
+	fi
+	echo "$1" | sed -e 's/^'$char'*//;s/'$char'*$//';
+}
+
+#
+## example trim string
+#
+#echo $(trim ";foo;bar;;" ';');
 ###################################################################################
 
 #
@@ -295,6 +334,7 @@ query2csv() {
 		query "$sql $sql_out";
 	fi
 }
+
 #
 ## example of query2csv
 #
@@ -317,6 +357,62 @@ table2csv(){
 #table2csv 'test' 'test.csv'
 ###################################################################################
 
+#
+# import csv file to table
+#
+# $1 - file
+# $2 - table name
+# $3 - update (array) - if row fields needed to be updated eg date format or increment (SQL format only, @field is variable with content of that field in CSV row)
+importcsv2table(){
+	# real path
+	local file=$(readlink -f $1);
+	local sql="LOAD DATA LOCAL INFILE '"$(escape $file)"' INTO TABLE \`$2\` COLUMNS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$escape"' LINES TERMINATED BY '"$newline"' ";
+	
+	# ignore rows (eg first row is column names)
+	if [ $ignore_rows -gt 0 ]; then
+		sql=$sql"IGNORE "$ignore_rows" LINES";
+	fi
+	
+	# update while importing
+	if [ ! -z "$3" ]; then
+		eval "declare -A update="${3#*=};
+		local columns=();
+		for x in $(split "$enclosure$delimiter$enclosure" "$(trim "$(head -1 $file)" '$enclosure')"); do
+			if [ ! -z "${update[$x]}" ]; then
+				columns+=("@$x");
+			else
+				columns+=("\`$x\`");
+			fi
+		done
+		sql=$sql" ("$(join ', ' "${columns[@]}")") ";
+		local ucolumns=();
+		for k in "${!update[@]}"; do
+			ucolumns+=("\`$k\` = ${update[$k]}");
+		done
+		sql=$sql"SET "$(join ', ' "${ucolumns[@]}");
+	fi
+	echo $sql;
+	
+	# do query
+	i=0;
+	while read -r line; do
+		if [ $i -gt 0 ]; then
+			affected_rows=$(echo "$line" | cut -f1);
+		fi
+		i=`expr $i + 1`;
+	done <<< "$(query "$sql; SELECT ROW_COUNT();")" 
+}
+
+#
+## example import csv file to table
+#
+#declare -A update
+#update=([id]='NULL' [firstname]="'Radovan'");
+#importcsv2table 'test.csv' 'test' "$(declare -p update)";
+#echo $affected_rows;
+##date format update example
+##update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+###################################################################################
 
 #
 # backup (no args will backup all databases)
