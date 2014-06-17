@@ -123,7 +123,7 @@ query() {
 	if [ $log_queries -gt 0 ]; then
 		echo `date +"%c"`" -> $1" >> $log_file;
 	fi
-	mysql -u$con_user -p$con_pass -h$con_host -P$con_port $con_db -e"$1";
+	mysql -u$con_user -p$con_pass -h$con_host -P$con_port $con_db -e"$1" --enable-local-infile;
 }
 
 #
