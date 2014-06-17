@@ -101,6 +101,16 @@ echo $affected_rows;
 #update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
 
 #
+# example importupdatecsv2table
+#
+
+declare -A update
+update=([id]='NULL' [firstname]="'Radovan'");
+importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
+echo $affected_rows;
+#update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+
+#
 # example backup
 #
 

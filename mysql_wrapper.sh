@@ -116,6 +116,24 @@ trim() {
 ###################################################################################
 
 #
+# array contains
+#
+# $1 - string
+# $2 - array
+contains() {
+	local e;
+	for e in "${@:2}"; do 
+		[[ "$e" == "$1" ]] && return 1; 
+	done
+	return 0;
+}
+
+#array=("foo" "bar" "baz" "qux")
+#contains "foo" "${array[@]}"
+#echo $?
+###################################################################################
+
+#
 # do mysql query
 #
 # $1 -query
@@ -391,7 +409,6 @@ importcsv2table(){
 		done
 		sql=$sql"SET "$(join ', ' "${ucolumns[@]}");
 	fi
-	echo $sql;
 	
 	# do query
 	i=0;
@@ -413,6 +430,90 @@ importcsv2table(){
 ##date format update example
 ##update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
 ###################################################################################
+
+#
+# import or update csv data into table
+#
+# $1 - file
+# $2 - table name
+# $3 - update (array) - if row fields needed to be updated eg date format or increment (SQL format only, @field is variable with content of that field in CSV row)
+importupdatecsv2table() {
+	# real path
+	local file=$(readlink -f $1);
+	# temp table
+	local tmp_name=$2"_tmp_"$RANDOM;
+	query "CREATE TABLE \`$tmp_name\` LIKE \`$2\`;";
+	
+	#local change=();
+	declare -A change;
+	# remove auto_increment if exists
+	local i=0;
+	while read -r line; do
+		if [ $i -gt 0 ]; then
+			change[$(echo "$line" | cut -f1)]="CHANGE \`$(echo "$line" | cut -f1)\` \`$(echo "$line" | cut -f1)\` $(echo "$line" | cut -f2)";
+		fi
+		i=`expr $i + 1`;
+	done <<< "$(query "SHOW COLUMNS FROM \`$tmp_name\` WHERE \`Key\` NOT LIKE '';")" 
+	
+	# columns in csv file
+	local file_columns=();
+	for x in $(split "$enclosure$delimiter$enclosure" "$(trim "$(head -1 $file)" '$enclosure')"); do
+		file_columns+=("$x");
+	done
+	
+	# table columns
+	local i=0;
+	while read -r line; do
+		if [ $i -gt 0 ]; then
+			contains "$(echo "$line" | cut -f1)" "${file_columns[@]}";
+			if [ $? -lt 1 ]; then # drop columns that are not in csv file
+				change[$(echo "$line" | cut -f1)]="DROP COLUMN \`$(echo "$line" | cut -f1)\`";
+			fi
+		fi
+		i=`expr $i + 1`;
+	done <<< "$(query "SHOW COLUMNS FROM \`$2\`;")" 
+	
+	# alter temp table
+	if [ ${#change[@]} -gt 0 ]; then
+		query "ALTER TABLE \`$tmp_name\` $(join ',' "${change[@]}");";
+	fi
+	
+	# import to tmp table
+	importcsv2table "$1" "$2" "$3";
+	
+	# values
+	local cols=();
+	local tcols=();
+	local k=0;
+	for k in ${file_columns[@]}; do
+		cols+=("\`$k\` = VALUES(\`$k\`)");
+		tcols+=("\`$k\`");
+	done
+	
+	# do query
+	i=0;
+	while read -r line; do
+		if [ $i -gt 0 ]; then
+			affected_rows=$(echo "$line" | cut -f1);
+		fi
+		i=`expr $i + 1`;
+	done <<< "$(query "INSERT INTO \`$2\` ( $(join ", " "${tcols[@]}") ) SELECT * FROM \`$tmp_name\` ON DUPLICATE KEY UPDATE $(join ", " "${cols[@]}"); SELECT ROW_COUNT();")";
+	
+	# drop tmp table
+	query "DROP TABLE \`$tmp_name\`;";
+}
+
+#
+## example importupdatecsv2table
+#
+#declare -A update
+#update=([firstname]="'Radovan'");
+#importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
+#echo $affected_rows;
+##date format update example
+##update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+###################################################################################
+
 
 #
 # backup (no args will backup all databases)
