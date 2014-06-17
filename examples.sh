@@ -91,6 +91,16 @@ query2csv 'select firstname,surname from test limit 2,4' 'test-2.csv';
 table2csv 'test' 'test.csv'
 
 #
+# example importcsv2table
+#
+
+declare -A update
+update=([id]='NULL' [firstname]="'Radovan'");
+importcsv2table 'test.csv' 'test' "$(declare -p update)";
+echo $affected_rows;
+#update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+
+#
 # example backup
 #
 
