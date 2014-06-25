@@ -176,6 +176,7 @@ fetch1st() {
 		i=`expr $i + 1`;
 	done <<< "$(query "$(echo "$1" | sed -e 's/;$//;s/limit\s*[0-9]*\s*$//Ig;s/limit\s*[0-9]*\s*,\s*[0-9]*\s*$//Ig;') LIMIT 1;")"
 }
+
 #
 ## example fetch1st
 #
