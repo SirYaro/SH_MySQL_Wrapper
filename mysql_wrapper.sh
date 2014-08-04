@@ -3,7 +3,7 @@
 #
 # SH MySQL Wrapper
 #
-# By: Radovan Janjic
+# By: Radovan Janjic <hi@radovanjanjic.com>
 #
 ###################################################################################
 # CONFIG
