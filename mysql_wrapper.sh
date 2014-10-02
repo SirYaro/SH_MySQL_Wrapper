@@ -3,6 +3,8 @@
 #
 # SH MySQL Wrapper
 #
+# https://github.com/uzi88/SH_MySQL_Wrapper
+#
 # By: Radovan Janjic <hi@radovanjanjic.com>
 #
 ###################################################################################
