@@ -47,7 +47,7 @@ num_columns=0;
 declare -A matrix;
 
 ###################################################################################
-# FUNCTION
+# FUNCTIONS
 ###################################################################################
 
 #
@@ -61,7 +61,8 @@ escape() {
 #
 ## example escape string
 #
-#echo $(escape "'")
+# echo $(escape "'");
+#
 ###################################################################################
 
 #
@@ -76,7 +77,8 @@ join() {
 #
 ## example join array
 #
-#join ',' "${array[@]}"
+# join ',' "${array[@]}"
+#
 ###################################################################################
 
 #
@@ -91,9 +93,10 @@ split() {
 #
 ## example split string
 #
-#for x in $(split ";" "foo;bar;baz;qux"); do
-#    echo "> [$x]";
-#done
+# for x in $(split ";" "foo;bar;baz;qux"); do
+#     echo "> [$x]";
+# done
+#
 ###################################################################################
 
 #
@@ -113,7 +116,8 @@ trim() {
 #
 ## example trim string
 #
-#echo $(trim ";foo;bar;;" ';');
+# echo $(trim ";foo;bar;;" ';');
+#
 ###################################################################################
 
 #
@@ -129,9 +133,13 @@ contains() {
 	return 0;
 }
 
-#array=("foo" "bar" "baz" "qux")
-#contains "foo" "${array[@]}"
-#echo $?
+#
+## example contains
+#
+# array=("foo" "bar" "baz" "qux")
+# contains "foo" "${array[@]}"
+# echo $?
+#
 ###################################################################################
 
 #
@@ -148,7 +156,8 @@ query() {
 #
 ## example query
 #
-#query 'describe test;'
+# query 'describe test;'
+#
 ###################################################################################
 
 #
@@ -181,13 +190,14 @@ fetch1st() {
 #
 ## example fetch1st
 #
-#fetch1st "select * from test";
+# fetch1st "select * from test";
 #
-#echo ${matrix[id]} 
-#echo ${matrix[firstname]} 
-#echo ${matrix[surname]} 
+# echo ${matrix[id]} 
+# echo ${matrix[firstname]} 
+# echo ${matrix[surname]} 
 #
-#echo "There is "$num_rows" row and "$num_columns" columns."
+# echo "There is "$num_rows" row and "$num_columns" columns."
+#
 ###################################################################################
 
 #
@@ -217,18 +227,19 @@ fetch2array() {
 #
 ## example fetch2array
 #
-#fetch2array "select * from test limit 5";
+# fetch2array "select * from test limit 5";
 #
-#echo $num_rows "rows"
-#echo $num_columns "cols"
+# echo $num_rows "rows"
+# echo $num_columns "cols"
 #
-#for (( j=1; j <= num_columns; j++ )); do
-#    for (( i=1; i <= num_rows; i++ )); do
-#		# $i - row
-#		# $j - col
-#        echo ${matrix[$i,$j]}
-#    done
-#done
+# for (( j=1; j <= num_columns; j++ )); do
+#     for (( i=1; i <= num_rows; i++ )); do
+# 		# $i - row
+# 		# $j - col
+#         echo ${matrix[$i,$j]}
+#     done
+# done
+#
 ###################################################################################
 
 #
@@ -268,10 +279,11 @@ array2insert() {
 #
 ## example array2insert
 #
-#declare -A data
-#data=([id]='::null' [firstname]=Radovan [surname]=Janjic)
-#array2insert 'test' "$(declare -p data)"
-#echo $last_insert_id
+# declare -A data
+# data=([id]='::null' [firstname]=Radovan [surname]=Janjic)
+# array2insert 'test' "$(declare -p data)"
+# echo $last_insert_id
+#
 ###################################################################################
 
 #
@@ -310,11 +322,12 @@ array2update() {
 #
 ## example array2update
 #
-#declare -A data
-#data=([firstname]=Rade [surname]=Janjic)
-#id=3;
-#array2update 'test' "$(declare -p data)" "id < $id"
-#echo $affected_rows
+# declare -A data
+# data=([firstname]=Rade [surname]=Janjic)
+# id=3;
+# array2update 'test' "$(declare -p data)" "id < $id"
+# echo $affected_rows
+#
 ###################################################################################
 
 #
@@ -358,8 +371,9 @@ query2csv() {
 #
 ## example of query2csv
 #
-#query2csv 'select * from test' 'test-1.csv';
-#query2csv 'select firstname,surname from test limit 2,4' 'test-2.csv';
+# query2csv 'select * from test' 'test-1.csv';
+# query2csv 'select firstname,surname from test limit 2,4' 'test-2.csv';
+#
 ###################################################################################
 
 #
@@ -367,14 +381,15 @@ query2csv() {
 #
 # $1 - table name
 # $2 - file
-table2csv(){
+table2csv() {
 	query2csv "SELECT * FROM $1" $2;
 }
 
 #
 ## example table2csv
 #
-#table2csv 'test' 'test.csv'
+# table2csv 'test' 'test.csv'
+#
 ###################################################################################
 
 #
@@ -383,7 +398,7 @@ table2csv(){
 # $1 - file
 # $2 - table name
 # $3 - update (array) - if row fields needed to be updated eg date format or increment (SQL format only, @field is variable with content of that field in CSV row)
-importcsv2table(){
+importcsv2table() {
 	# real path
 	local file=$(readlink -f $1);
 	local sql="LOAD DATA LOCAL INFILE '"$(escape $file)"' INTO TABLE \`$2\` COLUMNS TERMINATED BY '"$delimiter"' OPTIONALLY ENCLOSED BY '"$enclosure"' ESCAPED BY '"$escape"' LINES TERMINATED BY '"$newline"' ";
@@ -423,14 +438,24 @@ importcsv2table(){
 }
 
 #
-## example import csv file to table
+## simple import csv file into table
 #
-#declare -A update
-#update=([id]='NULL' [firstname]="'Radovan'");
-#importcsv2table 'test.csv' 'test' "$(declare -p update)";
-#echo $affected_rows;
-##date format update example
-##update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+# importcsv2table 'test.csv' 'test';
+# echo $affected_rows;
+#
+## example import csv file into table with update while import
+#
+# declare -A update
+# update=([id]='NULL' [firstname]="'Radovan'");
+# importcsv2table 'test.csv' 'test' "$(declare -p update)";
+# echo $affected_rows;
+#
+## date format update example while import
+#
+# declare -A update
+# update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+# importcsv2table 'test.csv' 'test' "$(declare -p update)";
+# echo $affected_rows;
 ###################################################################################
 
 #
@@ -508,12 +533,24 @@ importupdatecsv2table() {
 #
 ## example importupdatecsv2table
 #
-#declare -A update
-#update=([firstname]="'Radovan'");
-#importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
-#echo $affected_rows;
-##date format update example
-##update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+# declare -A update
+# update=([firstname]="'Radovan'");
+# importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
+# echo $affected_rows;
+#
+## date format update example
+#
+# declare -A update
+# update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+# importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
+# echo $affected_rows;
+#
+## NOTE!
+#
+# Table needs to have primary or unique key! One of the fields in
+# CSV file has to be that primary or unique key in order to preform update.
+# Otherwise all data will be inserted only.
+#
 ###################################################################################
 
 
@@ -543,7 +580,8 @@ backup() {
 #
 ## example backup
 #
-#backup                        # backup all databases
-#backup 'testdb'               # backup testdb
-#backup 'testdb' 'test_table'  # backup test_table
+# backup                        # backup all databases
+# backup 'testdb'               # backup testdb
+# backup 'testdb' 'test_table'  # backup test_table
+#
 ###################################################################################
