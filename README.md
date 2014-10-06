@@ -1,11 +1,21 @@
-SH_MySQL_Wrapper
-================
+BASH MySQL Wrapper
+==================
 
-SH MySQL Wrapper
+## Examples
 
 `````bash
 #!/bin/bash
 source "$(dirname "$0")/mysql_wrapper.sh";
+
+#
+# connect data
+#
+
+con_user="root";
+con_pass="test";
+con_host="localhost";
+con_port="3306";
+con_db="test";
 
 #
 # example escape string
