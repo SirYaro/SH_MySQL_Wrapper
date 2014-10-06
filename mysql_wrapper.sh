@@ -568,7 +568,7 @@ importdump() {
 #
 ## example importdump
 #
-# importdump '20140612.test.sql.gz';
+# importdump '20140612.test.sql';
 #
 ###################################################################################
 
