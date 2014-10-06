@@ -10,41 +10,44 @@
 # CONFIG
 ###################################################################################
 
-# connect data
-con_user="root";
-con_pass="test";
-con_host="localhost";
-con_port="3306";
-con_db="test";
-
-# last insert id
-last_insert_id=0;
-
-# affected rows
-affected_rows=0;
+# connection
+con_user="root";          # username
+con_pass="test";          # password
+con_host="localhost";     # MySQL server
+con_port="3306";          # port number
+con_db="test";            # database
 
 # log config
-log_queries=1;
-log_file='mysql_log.txt';
+log_queries=1;            # log queries to file (1 or 0)
+log_file='mysql_log.txt'; # log file path
 
 # CSV format
-delimiter=',';
-enclosure='"';
-escape='\\';
-newline='\n';
-# Column names as first row
-column_names=1;
-# Number of ignored rows
-ignore_rows=1;
+delimiter=',';            # field delimiter (one character only)
+enclosure='"';            # field enclosure character (one character only)
+escape='\\';              # escape character (one character only)
+newline='\n';             # new line
+column_names=1;           # column names as first line for CSV export (1 or 0)
+ignore_rows=1;            # number of ignored lines (eg. column names are first line)
 
 # backup
-backup_path='backups';
+backup_path='backups';    # location of the backup directory
 
-# result
-num_rows=0;
-num_columns=0;
+###################################################################################
+# RESERVED VARIABLES
+###################################################################################
+
+# last insert id
+last_insert_id=0;         # generated ID in the last query
+
+# affected rows
+affected_rows=0;          # number of affected rows in a previous operation
+
+# query result
+num_rows=0;               # number of rows in result
+num_columns=0;            # number of fields in result
+
 # fetch return
-declare -A matrix;
+declare -A matrix;        # array of returned data
 
 ###################################################################################
 # FUNCTIONS
