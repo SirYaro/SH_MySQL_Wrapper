@@ -1,10 +1,10 @@
 #!/bin/bash
 ###################################################################################
 #
-# Projectname	- BASH MySQL Wrapper
-# Version	- 1.0
-# Author	- Radovan Janjic <hi@radovanjanjic.com>
-# Link		- https://github.com/uzi88/SH_MySQL_Wrapper
+# Projectname   - BASH MySQL Wrapper
+# Version       - 1.0
+# Author        - Radovan Janjic <hi@radovanjanjic.com>
+# Link          - https://github.com/uzi88/SH_MySQL_Wrapper
 #
 ###################################################################################
 # CONFIG
