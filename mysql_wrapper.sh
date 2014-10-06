@@ -459,6 +459,7 @@ importcsv2table() {
 # update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
 # importcsv2table 'test.csv' 'test' "$(declare -p update)";
 # echo $affected_rows;
+#
 ###################################################################################
 
 #
