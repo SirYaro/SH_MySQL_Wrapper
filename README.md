@@ -5,6 +5,11 @@ BASH MySQL Wrapper
 
 `````bash
 #!/bin/bash
+
+#
+# include wrapper
+#
+
 source "$(dirname "$0")/mysql_wrapper.sh";
 
 #
@@ -125,6 +130,12 @@ update=([id]='NULL' [firstname]="'Radovan'");
 importupdatecsv2table 'test.csv' 'test' "$(declare -p update)";
 echo $affected_rows;
 #update=([date]='STR_TO_DATE(@date, "%d/%m/%Y")');
+
+#
+# example importdump
+#
+
+importdump "20140612.test.sql"; 
 
 #
 # example backup

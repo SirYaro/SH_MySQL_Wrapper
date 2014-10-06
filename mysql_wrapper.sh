@@ -557,6 +557,20 @@ importupdatecsv2table() {
 #
 ###################################################################################
 
+#
+# imports MySQL dump into database
+#
+# $1 - dump file path
+importdump() {
+	mysql -u$con_user -p$con_pass -h$con_host -P$con_port $con_db < $1;
+}
+
+#
+## example importdump
+#
+# importdump '20140612.test.sql.gz';
+#
+###################################################################################
 
 #
 # backup (no args will backup all databases)
