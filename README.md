@@ -5,7 +5,7 @@ SH MySQL Wrapper
 
 `````bash
 #!/bin/bash
-source $(readlink -f "mysql_wrapper.sh");
+source "$(dirname "$0")/mysql_wrapper.sh";
 
 #
 # example escape string
